@@ -164,26 +164,32 @@ def predict(df, model):
 
     # Load model bundle
     model_bundle = model
-    xgb_model = model_bundle['xgb_model']
-    mlp_model = model_bundle['mlp_model']
-    scaler = model_bundle['scaler']
+    main_model = model_bundle.get('rf_model', model_bundle.get('xgb_model'))
+    if main_model is None:
+        raise KeyError("Model bundle must contain 'rf_model' or 'xgb_model'.")
+    mlp_model = model_bundle.get('mlp_model')
+    scaler = model_bundle.get('scaler')
     preprocessor = model_bundle['preprocessor']
     weight = float(model_bundle.get('ensemble_weight', 0.5))
-    class_order = np.array(model_bundle.get('class_order', xgb_model.classes_))
+    class_order = np.array(model_bundle.get('class_order', main_model.classes_))
 
     # Prepare features using saved preprocessing
     X_pred = _transform_with_preprocessor(df, preprocessor)
-    X_pred_scaled = scaler.transform(X_pred)
 
-    # Probability predictions
-    xgb_proba = xgb_model.predict_proba(X_pred)
-    mlp_proba = mlp_model.predict_proba(X_pred_scaled)
+    if mlp_model is not None and scaler is not None:
+        X_pred_scaled = scaler.transform(X_pred)
 
-    xgb_proba = _align_proba(xgb_proba, xgb_model.classes_, class_order)
-    mlp_proba = _align_proba(mlp_proba, mlp_model.classes_, class_order)
+        # Probability predictions
+        main_proba = main_model.predict_proba(X_pred)
+        mlp_proba = mlp_model.predict_proba(X_pred_scaled)
 
-    combined = weight * xgb_proba + (1.0 - weight) * mlp_proba
-    preds = class_order[np.argmax(combined, axis=1)]
+        main_proba = _align_proba(main_proba, main_model.classes_, class_order)
+        mlp_proba = _align_proba(mlp_proba, mlp_model.classes_, class_order)
+
+        combined = weight * main_proba + (1.0 - weight) * mlp_proba
+        preds = class_order[np.argmax(combined, axis=1)]
+    else:
+        preds = main_model.predict(X_pred)
 
     predictions = pd.DataFrame({
         'User_ID': user_ids,

@@ -1,0 +1,30 @@
+{
+  "name": "dataquest",
+  "version": "1.0.0",
+  "description": "This repository contains a full Phase II implementation for the DataQuest Insurance Recommender: - FastAPI backend (`api/`) - Streamlit Broker Assistant UI (`ui/app.py`) - Shared inference core (`core/`) - Retraining stub (`scripts/`) - Tests (`tests/`) - Technical documentation (`docs/`)",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rami-Troudi/Dataquest.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Rami-Troudi/Dataquest/issues"
+  },
+  "homepage": "https://github.com/Rami-Troudi/Dataquest#readme",
+  "dependencies": {
+    "next": "^16.1.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  }
+}

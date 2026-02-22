@@ -1,0 +1,19 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+ui/node_modules/
+ui/.next/
+ui/.env.local
+
+*.log
+
+# Local data artifacts
+submission_rf_only.csv
+
+.streamlit/
+
+# Project-level dependencies and datasets
+node_modules/
+Data/

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620">
+  <defs>
+    <style>
+      .title { font: 700 30px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .label { font: 600 19px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .small { font: 500 15px 'Segoe UI', Arial, sans-serif; fill: #1e293b; }
+      .box { fill: #eef4ff; stroke: #31598a; stroke-width: 2; rx: 16; }
+      .arrow { stroke: #1e3a5f; stroke-width: 3; fill: none; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#1e3a5f"/>
+    </marker>
+  </defs>
+
+  <text x="600" y="48" text-anchor="middle" class="title">DataQuest Phase II Architecture</text>
+
+  <rect x="60" y="110" width="290" height="160" class="box"/>
+  <text x="205" y="162" text-anchor="middle" class="label">Next.js UI</text>
+  <text x="205" y="194" text-anchor="middle" class="small">Input form + prediction panel</text>
+  <text x="205" y="220" text-anchor="middle" class="small">Calls API endpoints</text>
+
+  <rect x="455" y="110" width="290" height="160" class="box"/>
+  <text x="600" y="154" text-anchor="middle" class="label">FastAPI Backend</text>
+  <text x="600" y="184" text-anchor="middle" class="small">GET /health, GET /schema</text>
+  <text x="600" y="208" text-anchor="middle" class="small">POST /predict, GET /metrics</text>
+  <text x="600" y="232" text-anchor="middle" class="small">Pydantic validation</text>
+
+  <rect x="850" y="110" width="290" height="160" class="box"/>
+  <text x="995" y="162" text-anchor="middle" class="label">Model Artifact</text>
+  <text x="995" y="194" text-anchor="middle" class="small">model.pkl</text>
+  <text x="995" y="220" text-anchor="middle" class="small">rf_model + preprocessor</text>
+
+  <rect x="455" y="350" width="290" height="170" class="box"/>
+  <text x="600" y="404" text-anchor="middle" class="label">Shared Core Inference</text>
+  <text x="600" y="434" text-anchor="middle" class="small">Feature engineering</text>
+  <text x="600" y="458" text-anchor="middle" class="small">Categorical mapping + medians</text>
+  <text x="600" y="482" text-anchor="middle" class="small">predict_proba + top-k output</text>
+
+  <path d="M350 190 L455 190" class="arrow"/>
+  <text x="402" y="176" text-anchor="middle" class="small">JSON request</text>
+
+  <path d="M745 190 L850 190" class="arrow"/>
+  <text x="798" y="176" text-anchor="middle" class="small">load + inference</text>
+
+  <path d="M600 270 L600 350" class="arrow"/>
+  <text x="612" y="320" class="small">strict preprocess pipeline</text>
+
+  <path d="M850 250 L745 350" class="arrow"/>
+  <text x="782" y="313" class="small">predict_proba</text>
+
+  <text x="600" y="585" text-anchor="middle" class="small">
+    Deterministic runtime path: UI -> API -> Core preprocessing -> RF model -> response
+  </text>
+</svg>

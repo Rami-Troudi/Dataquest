@@ -1,0 +1,12 @@
+seed: 42
+train_csv: "train (1).csv"
+model_out: "model.pkl"
+rf_params:
+  n_estimators: 140
+  max_depth: 20
+  min_samples_split: 4
+  min_samples_leaf: 2
+  max_features: "sqrt"
+  class_weight: "balanced_subsample"
+  criterion: "gini"
+  n_jobs: -1

@@ -1,0 +1,125 @@
+{
+  "household": {
+    "description": "Household composition features",
+    "features": [
+      {
+        "name": "Adult_Dependents",
+        "type": "numeric",
+        "required": true,
+        "default": null,
+        "description": "Number of adult dependents",
+        "validation_rules": {
+          "min": 0,
+          "max": 10
+        },
+        "transformation": null
+      },
+      {
+        "name": "Child_Dependents",
+        "type": "numeric",
+        "required": true,
+        "default": null,
+        "description": "Number of child dependents",
+        "validation_rules": {
+          "min": 0,
+          "max": 20
+        },
+        "transformation": null
+      },
+      {
+        "name": "Infant_Dependents",
+        "type": "numeric",
+        "required": true,
+        "default": null,
+        "description": "Number of infant dependents",
+        "validation_rules": {
+          "min": 0,
+          "max": 10
+        },
+        "transformation": null
+      }
+    ]
+  },
+  "claims": {
+    "description": "Claims history features",
+    "features": [
+      {
+        "name": "Previous_Claims_Filed",
+        "type": "numeric",
+        "required": true,
+        "default": null,
+        "description": "Number of previous claims filed",
+        "validation_rules": {
+          "min": 0
+        },
+        "transformation": null
+      },
+      {
+        "name": "Years_Without_Claims",
+        "type": "numeric",
+        "required": true,
+        "default": null,
+        "description": "Years without filing a claim",
+        "validation_rules": {
+          "min": 0
+        },
+        "transformation": null
+      }
+    ]
+  },
+  "policy": {
+    "description": "Policy features",
+    "features": [
+      {
+        "name": "Previous_Policy_Duration_Months",
+        "type": "numeric",
+        "required": true,
+        "default": null,
+        "description": "Previous policy duration in months",
+        "validation_rules": {
+          "min": 0
+        },
+        "transformation": null
+      },
+      {
+        "name": "Policy_Start_Month",
+        "type": "categorical",
+        "required": true,
+        "default": null,
+        "description": "Policy start month",
+        "validation_rules": {
+          "allowed_values": [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December"
+          ]
+        },
+        "transformation": null
+      },
+      {
+        "name": "Deductible_Tier",
+        "type": "categorical",
+        "required": true,
+        "default": null,
+        "description": "Deductible tier",
+        "validation_rules": {
+          "allowed_values": [
+            "Low",
+            "Medium",
+            "High"
+          ]
+        },
+        "transformation": null
+      }
+    ]
+  }
+}

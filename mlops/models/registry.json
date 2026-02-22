@@ -1,0 +1,13 @@
+{
+  "insurance_lgb:1.0.0": {
+    "name": "insurance_lgb",
+    "version": "1.0.0",
+    "model_type": "lightgbm",
+    "file_path": "model.joblib",
+    "features": [],
+    "description": "LightGBM insurance policy prediction model",
+    "created_date": "",
+    "accuracy": 0.85,
+    "status": "active"
+  }
+}

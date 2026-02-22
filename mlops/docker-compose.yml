@@ -1,0 +1,57 @@
+services:
+  # MLOps API Service
+  mlops-api:
+    build:
+      context: ..
+      dockerfile: mlops/Dockerfile
+    container_name: insurance-mlops-api
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+    volumes:
+      - ../model.pkl:/app/model.pkl:ro
+      - ../test.csv:/app/test.csv:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - mlops-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Nginx Reverse Proxy (Optional - for production)
+  nginx:
+    image: nginx:alpine
+    container_name: mlops-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - mlops-api
+    restart: unless-stopped
+    networks:
+      - mlops-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  mlops-network:
+    driver: bridge
+

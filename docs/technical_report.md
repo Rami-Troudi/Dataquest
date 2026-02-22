@@ -34,11 +34,20 @@ Main engineered families:
 - API endpoints:
   - `GET /health`
   - `POST /predict`
+  - `POST /predict-batch`
+  - `POST /whatif`
   - `GET /schema`
+  - `GET /feature-importance`
+  - `GET /model/feature_importance`
+  - `POST /explain`
+  - `POST /explain_csv`
+  - `POST /explain_csv_upload`
   - `GET /metrics`
+  - `GET /metadata`
 - UI:
-  - Next.js form submission for full record inference.
-  - Returns predicted bundle + top-3 probabilities.
+  - Next.js interactive workbench with presets, grouped form sections, and top-k control.
+  - Includes prediction, what-if, batch, and explainability tabs.
+  - Displays global feature importance and local reason codes.
 
 ## 7. Experiments and Lessons Learned
 - Initial iterations emphasized offline score optimization and packaging constraints.

@@ -91,6 +91,12 @@ def predict_proba(df: pd.DataFrame, artifacts: InferenceArtifacts) -> np.ndarray
     return artifacts.model.predict_proba(transformed)
 
 
+def transform_features(df: pd.DataFrame, artifacts: InferenceArtifacts) -> pd.DataFrame:
+    engineered = engineered_preprocess(df)
+    transformed = _transform_with_preprocessor(engineered, artifacts.preprocessor)
+    return transformed.reindex(columns=artifacts.feature_list)
+
+
 def predict_topk(
     proba: np.ndarray, class_order: np.ndarray, k: int = 3
 ) -> list[dict[str, float | int | str]]:

@@ -108,3 +108,30 @@ class BatchPredictRequest(BaseModel):
 
 class BatchPredictResponse(BaseModel):
     results: list[PredictResponse]
+
+
+class ExplainRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    record: CustomerRecord
+    top_k_reasons: int = Field(default=3, ge=1, le=10)
+
+
+class ExplainReasonCode(BaseModel):
+    rank: int
+    feature: str
+    value: str
+    contribution: str
+
+
+class ExplainResponse(BaseModel):
+    User_ID: str
+    prediction: int
+    confidence: float
+    class_probabilities: list[float]
+    reason_codes: list[ExplainReasonCode]
+
+
+class ExplainCsvRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    records: list[CustomerRecord]
+    top_k_reasons: int = Field(default=3, ge=1, le=10)

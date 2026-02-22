@@ -1,20 +1,94 @@
-# DataQuest: Phase I
+# DataQuest — Insurance Bundle Recommender
 
-## Files
+> Intelligent multi-class classification system that predicts the most suitable insurance coverage bundle for customers.
 
-| File          | Description                                                                                  |
-| :------------ | :------------------------------------------------------------------------------------------- |
-| `train.csv`   | Training set with features **and** the target column `Purchased_Coverage_Bundle`.            |
-| `test.csv`    | Test set (features only). The auto-evaluator feeds this to your code.                        |
-| `solution.py` | Template with the three functions you must implement: `preprocess`, `load_model`, `predict`. |
+[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)]()
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-green.svg)]()
+[![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)]()
+
+---
+
+## Quick Start
+
+```bash
+# 1. Install dependencies
+pip install -r requirements-api.txt
+
+# 2. Launch the API + frontend
+cd Dataquest
+uvicorn api.main:app --host 0.0.0.0 --port 8000
+
+# 3. Open in browser
+http://localhost:8000
+```
+
+**Or with Docker:**
+
+```bash
+docker-compose up --build -d
+# → http://localhost:8000
+```
+
+---
+
+## Project Structure
+
+```
+Dataquest/
+├── api/                      # FastAPI backend
+│   ├── main.py               #   Routes & inference logic
+│   └── schemas.py            #   Pydantic request/response models
+├── frontend/
+│   └── index.html            # Single-page prediction UI
+├── solution.py               # Competition interface (preprocess, load_model, predict)
+├── explainability.py          # Global + local explainability module
+├── v4_rf_only.py             # Training & hyperparameter search pipeline
+├── test_solution.py          # Output validation script
+├── model.pkl                 # Trained RandomForest bundle (compressed, ~3 MB)
+├── requirements-api.txt      # API Python dependencies
+├── Dockerfile                # Container build
+├── docker-compose.yml        # Orchestration
+├── TECHNICAL_REPORT.md       # Full technical documentation
+└── README.md                 # This file
+```
+
+---
+
+## API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/health` | Model & system health check |
+| `POST` | `/predict` | Predict bundle(s) with confidence + reason codes |
+| `GET` | `/explain/global` | Ranked feature importance table |
+| `GET` | `/` | Serves the frontend UI |
+
+### Example: Predict
+
+```bash
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"customers": [{"Estimated_Annual_Income": 65000, "Adult_Dependents": 2, "Region_Code": "USA"}]}'
+```
+
+---
+
+## Model Performance
+
+| Metric | Value |
+|--------|-------|
+| Validation Macro F1 | **0.6009** |
+| Model size (compressed) | **3.15 MB** |
+| Inference latency | **~29 ms** |
+| Score proxy (F1 × penalties) | **0.5394** |
 
 ---
 
 ## Objective
 
-Build a model that predicts which **`Purchased_Coverage_Bundle`** (integer 0–9) a prospective customer will choose.
+Predict which **`Purchased_Coverage_Bundle`** (integer 0–9) a prospective customer will choose.
 
-This is a **multi-class classification** problem with 10 classes.
+Multi-class classification with **10 classes**.
 
 ---
 

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Insurance Bundle Recommender</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-light: #dbeafe;
+    --success: #059669;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 14px rgba(0,0,0,.04);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+  /* ---- NAV ---- */
+  .navbar { background: var(--primary); color: #fff; padding: 14px 32px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 8px rgba(37,99,235,.25); }
+  .navbar svg { width: 28px; height: 28px; }
+  .navbar h1 { font-size: 1.15rem; font-weight: 600; letter-spacing: -.3px; }
+
+  /* ---- LAYOUT ---- */
+  .container { max-width: 1140px; margin: 28px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 820px) { .container { grid-template-columns: 1fr; } }
+
+  .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px 28px; }
+  .card h2 { font-size: 1.05rem; font-weight: 600; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .card h2 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); }
+
+  /* ---- FORM ---- */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+  .form-group { display: flex; flex-direction: column; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: .78rem; font-weight: 500; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .4px; }
+  input, select {
+    padding: 9px 12px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: .9rem; font-family: inherit; color: var(--text); transition: border .15s;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+  select { cursor: pointer; background: #fff; }
+
+  .section-title { font-size: .82rem; font-weight: 600; color: var(--primary); margin: 16px 0 8px; grid-column: 1/-1; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+
+  .btn {
+    margin-top: 18px; width: 100%; padding: 12px; border: none; border-radius: 8px;
+    background: var(--primary); color: #fff; font-size: .95rem; font-weight: 600;
+    cursor: pointer; transition: background .15s, transform .1s;
+  }
+  .btn:hover { background: var(--primary-dark); }
+  .btn:active { transform: scale(.98); }
+  .btn:disabled { opacity: .55; cursor: not-allowed; }
+
+  /* ---- RESULTS ---- */
+  #results-panel { display: none; }
+  #results-panel.show { display: block; }
+
+  .result-bundle { text-align: center; padding: 24px 0 18px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+  .result-bundle .bundle-id { font-size: 2.8rem; font-weight: 700; color: var(--primary); line-height: 1; }
+  .result-bundle .bundle-name { font-size: 1.1rem; color: var(--text); margin-top: 6px; font-weight: 500; }
+  .confidence-bar { margin-top: 10px; }
+  .confidence-bar .bar-bg { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .confidence-bar .bar-fill { height: 100%; background: var(--success); border-radius: 4px; transition: width .6s ease; }
+  .confidence-bar .bar-label { font-size: .78rem; color: var(--muted); margin-top: 4px; text-align: center; }
+
+  .reasons { list-style: none; }
+  .reasons li { padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; background: #f1f5f9; display: flex; align-items: center; gap: 10px; }
+  .reasons li .rank { width: 26px; height: 26px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 700; flex-shrink: 0; }
+  .reasons li .feat { font-weight: 500; }
+  .reasons li .val { color: var(--muted); margin-left: auto; font-size: .88rem; }
+
+  .error-msg { color: #dc2626; font-size: .88rem; margin-top: 12px; display: none; }
+
+  /* ---- GLOBAL IMPORTANCE ---- */
+  .importance-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .importance-bar-row .fname { width: 180px; font-size: .82rem; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0; }
+  .importance-bar-row .ibar { flex: 1; height: 14px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .importance-bar-row .ibar-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width .4s; }
+  .importance-bar-row .ipct { width: 48px; font-size: .78rem; color: var(--muted); text-align: right; flex-shrink: 0; }
+
+  .health-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 20px; font-size: .82rem; font-weight: 500; }
+  .health-badge.ok { background: #d1fae5; color: #065f46; }
+  .health-badge.err { background: #fee2e2; color: #991b1b; }
+
+  /* ---- FOOTER ---- */
+  .footer { text-align: center; padding: 20px; color: var(--muted); font-size: .78rem; }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+  <h1>Insurance Bundle Recommender</h1>
+</nav>
+
+<div class="container">
+  <!-- LEFT: INPUT FORM -->
+  <div class="card">
+    <h2><span class="dot"></span>Customer Profile</h2>
+    <form id="predict-form" class="form-grid" autocomplete="off">
+
+      <div class="section-title">Demographics &amp; Financials</div>
+      <div class="form-group"><label>Employment Status</label>
+        <select name="Employment_Status">
+          <option value="Employed_FullTime">Full-Time Employed</option>
+          <option value="Self_Employed">Self-Employed</option>
+          <option value="Contractor">Contractor</option>
+          <option value="Unemployed">Unemployed</option>
+        </select></div>
+      <div class="form-group"><label>Annual Income ($)</label><input type="number" name="Estimated_Annual_Income" value="45000" min="0" step="1000" /></div>
+      <div class="form-group"><label>Region Code</label>
+        <select name="Region_Code" id="region-select"></select></div>
+      <div class="form-group"><label>Adult Dependents</label><input type="number" name="Adult_Dependents" value="1" min="0" /></div>
+      <div class="form-group"><label>Child Dependents</label><input type="number" name="Child_Dependents" value="0" min="0" step="1" /></div>
+      <div class="form-group"><label>Infant Dependents</label><input type="number" name="Infant_Dependents" value="0" min="0" /></div>
+
+      <div class="section-title">Customer History &amp; Risk</div>
+      <div class="form-group"><label>Existing Policyholder</label>
+        <select name="Existing_Policyholder"><option value="0">No</option><option value="1">Yes</option></select></div>
+      <div class="form-group"><label>Previous Claims</label><input type="number" name="Previous_Claims_Filed" value="0" min="0" /></div>
+      <div class="form-group"><label>Years Without Claims</label><input type="number" name="Years_Without_Claims" value="0" min="0" /></div>
+      <div class="form-group"><label>Prior Policy (months)</label><input type="number" name="Previous_Policy_Duration_Months" value="0" min="0" /></div>
+      <div class="form-group"><label>Cancelled Post-Purchase</label>
+        <select name="Policy_Cancelled_Post_Purchase"><option value="0">No</option><option value="1">Yes</option></select></div>
+
+      <div class="section-title">Policy Details</div>
+      <div class="form-group"><label>Deductible Tier</label>
+        <select name="Deductible_Tier">
+          <option value="Tier_1_High_Ded">Tier 1 — High</option>
+          <option value="Tier_2_Mid_Ded" selected>Tier 2 — Mid</option>
+          <option value="Tier_3_Low_Ded">Tier 3 — Low</option>
+          <option value="Tier_4_Zero_Ded">Tier 4 — Zero</option>
+        </select></div>
+      <div class="form-group"><label>Payment Schedule</label>
+        <select name="Payment_Schedule">
+          <option value="Monthly_EFT">Monthly EFT</option>
+          <option value="Quarterly_Invoice">Quarterly Invoice</option>
+          <option value="Annual_Upfront">Annual Upfront</option>
+        </select></div>
+      <div class="form-group"><label>Vehicles on Policy</label><input type="number" name="Vehicles_on_Policy" value="0" min="0" /></div>
+      <div class="form-group"><label>Custom Riders</label><input type="number" name="Custom_Riders_Requested" value="0" min="0" /></div>
+      <div class="form-group"><label>Grace Extensions</label><input type="number" name="Grace_Period_Extensions" value="0" min="0" /></div>
+
+      <div class="section-title">Sales &amp; Underwriting</div>
+      <div class="form-group"><label>Acquisition Channel</label>
+        <select name="Acquisition_Channel">
+          <option value="Direct_Website">Direct Website</option>
+          <option value="Local_Broker">Local Broker</option>
+          <option value="Aggregator_Site">Aggregator Site</option>
+          <option value="Corporate_Partner">Corporate Partner</option>
+          <option value="Affiliate_Group">Affiliate Group</option>
+        </select></div>
+      <div class="form-group"><label>Broker Agency Type</label>
+        <select name="Broker_Agency_Type">
+          <option value="Urban_Boutique">Urban Boutique</option>
+          <option value="National_Corporate">National Corporate</option>
+        </select></div>
+      <div class="form-group"><label>Broker ID</label><input type="number" name="Broker_ID" value="" placeholder="optional" /></div>
+      <div class="form-group"><label>Employer ID</label><input type="number" name="Employer_ID" value="" placeholder="optional" /></div>
+      <div class="form-group"><label>Days Since Quote</label><input type="number" name="Days_Since_Quote" value="30" min="0" /></div>
+      <div class="form-group"><label>Underwriting Days</label><input type="number" name="Underwriting_Processing_Days" value="0" min="0" /></div>
+      <div class="form-group"><label>Policy Amendments</label><input type="number" name="Policy_Amendments_Count" value="0" min="0" /></div>
+
+      <div class="section-title">Policy Start Date</div>
+      <div class="form-group"><label>Year</label><input type="number" name="Policy_Start_Year" value="2024" min="2000" max="2030" /></div>
+      <div class="form-group"><label>Month</label>
+        <select name="Policy_Start_Month">
+          <option>January</option><option>February</option><option>March</option><option>April</option>
+          <option>May</option><option>June</option><option>July</option><option>August</option>
+          <option>September</option><option>October</option><option>November</option><option>December</option>
+        </select></div>
+      <div class="form-group"><label>Week</label><input type="number" name="Policy_Start_Week" value="1" min="1" max="53" /></div>
+      <div class="form-group"><label>Day</label><input type="number" name="Policy_Start_Day" value="1" min="1" max="31" /></div>
+
+      <div class="form-group full">
+        <button type="submit" class="btn" id="submit-btn">Predict Bundle</button>
+      </div>
+    </form>
+    <p class="error-msg" id="error-msg"></p>
+  </div>
+
+  <!-- RIGHT: RESULTS -->
+  <div>
+    <div class="card" id="results-panel">
+      <h2><span class="dot"></span>Prediction Result</h2>
+      <div class="result-bundle">
+        <div class="bundle-id" id="res-bundle-id">—</div>
+        <div class="bundle-name" id="res-bundle-name"></div>
+        <div class="confidence-bar">
+          <div class="bar-bg"><div class="bar-fill" id="res-conf-bar" style="width:0%"></div></div>
+          <div class="bar-label" id="res-conf-label">Confidence: —</div>
+        </div>
+      </div>
+
+      <h2 style="margin-top:4px"><span class="dot"></span>Top Reasons</h2>
+      <ul class="reasons" id="res-reasons"></ul>
+    </div>
+
+    <div class="card" style="margin-top:24px">
+      <h2><span class="dot"></span>Global Feature Importance</h2>
+      <div id="global-importance">Loading…</div>
+    </div>
+
+    <div class="card" style="margin-top:24px">
+      <h2><span class="dot"></span>System Health</h2>
+      <div id="health-info"><span class="health-badge">Checking…</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">DataQuest Hackathon — Insurance Bundle Recommender &copy; 2026</div>
+
+<script>
+const API = window.location.origin;
+const REGIONS = ["ABW","AGO","AIA","ALB","AND","ARE","ARG","ARM","ASM","ATA","ATF","AUS","AUT","AZE","BEL","BEN","BFA","BGD","BGR","BHR","BHS","BIH","BLR","BOL","BRA","BRB","BWA","CAF","CHE","CHL","CHN","CIV","CMR","CN","COL","COM","CPV","CRI","CUB","CYM","CYP","CZE","DEU","DJI","DMA","DNK","DOM","DZA","ECU","EGY","ESP","EST","ETH","FIN","FJI","FRA","FRO","GAB","GBR","GEO","GGY","GHA","GIB","GLP","GNB","GRC","GTM","HKG","HND","HRV","HUN","IDN","IMN","IND","IRL","IRN","IRQ","ISL","ISR","ITA","JAM","JEY","JOR","JPN","KAZ","KEN","KHM","KNA","KOR","KWT","LAO","LBN","LBY","LIE","LKA","LTU","LUX","LVA","MAC","MAR","MCO","MDV","MEX","MKD","MLT","MMR","MNE","MOZ","MRT","MUS","MWI","MYS","MYT","NAM","NCL","NGA","NLD","NOR","NZL","OMN","PAK","PAN","PER","PHL","POL","PRI","PRT","PRY","QAT","ROU","RUS","RWA","SAU","SDN","SEN","SGP","SLE","SLV","SRB","STP","SUR","SVK","SVN","SWE","SYC","SYR","TGO","THA","TJK","TMP","TUN","TUR","TWN","TZA","UGA","UKR","UMI","URY","USA","UZB","VEN","VGB","VNM","ZAF","ZMB","ZWE"];
+
+// Populate region dropdown
+const regionSel = document.getElementById('region-select');
+REGIONS.forEach(r => { const o = document.createElement('option'); o.value = r; o.textContent = r; if(r==='USA') o.selected = true; regionSel.appendChild(o); });
+
+// ---- Health check ----
+fetch(API + '/health').then(r => r.json()).then(d => {
+  document.getElementById('health-info').innerHTML =
+    `<span class="health-badge ok">● ${d.status}</span>
+     <span style="margin-left:12px;font-size:.82rem;color:#64748b">Model: ${d.model_type} · ${d.num_features} features · ${d.num_classes} classes</span>`;
+}).catch(() => {
+  document.getElementById('health-info').innerHTML = '<span class="health-badge err">● Offline</span>';
+});
+
+// ---- Global importance ----
+fetch(API + '/explain/global').then(r => r.json()).then(d => {
+  const top = d.features.slice(0, 12);
+  const maxPct = top[0]?.importance_pct || 1;
+  document.getElementById('global-importance').innerHTML = top.map(f =>
+    `<div class="importance-bar-row">
+       <span class="fname" title="${f.feature}">${f.feature}</span>
+       <div class="ibar"><div class="ibar-fill" style="width:${(f.importance_pct / maxPct * 100).toFixed(1)}%"></div></div>
+       <span class="ipct">${f.importance_pct.toFixed(1)}%</span>
+     </div>`
+  ).join('');
+}).catch(() => { document.getElementById('global-importance').textContent = 'Failed to load.'; });
+
+// ---- Predict ----
+document.getElementById('predict-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('submit-btn');
+  const errEl = document.getElementById('error-msg');
+  errEl.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Predicting…';
+
+  const fd = new FormData(e.target);
+  const customer = {};
+  for (const [k, v] of fd.entries()) {
+    if (v === '') { customer[k] = null; continue; }
+    if (['Employment_Status','Region_Code','Deductible_Tier','Payment_Schedule','Acquisition_Channel','Broker_Agency_Type','Policy_Start_Month'].includes(k)) {
+      customer[k] = v;
+    } else {
+      customer[k] = Number(v);
+    }
+  }
+
+  try {
+    const res = await fetch(API + '/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ customers: [customer] })
+    });
+    if (!res.ok) { const t = await res.text(); throw new Error(t); }
+    const data = await res.json();
+    const p = data.predictions[0];
+
+    document.getElementById('results-panel').classList.add('show');
+    document.getElementById('res-bundle-id').textContent = p.predicted_bundle_id;
+    document.getElementById('res-bundle-name').textContent = p.predicted_bundle_name.replace(/_/g, ' ');
+    const confPct = (p.confidence * 100).toFixed(1);
+    document.getElementById('res-conf-bar').style.width = confPct + '%';
+    document.getElementById('res-conf-label').textContent = `Confidence: ${confPct}%`;
+
+    const reasonsEl = document.getElementById('res-reasons');
+    reasonsEl.innerHTML = p.reason_codes.map(r =>
+      `<li><span class="rank">${r.rank}</span><span class="feat">${r.feature.replace(/_/g, ' ')}</span><span class="val">${r.value}</span></li>`
+    ).join('');
+  } catch (err) {
+    errEl.textContent = 'Prediction failed: ' + err.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Predict Bundle';
+  }
+});
+</script>
+</body>
+</html>

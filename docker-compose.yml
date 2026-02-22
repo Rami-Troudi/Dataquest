@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  recommender-api:
+    build: .
+    container_name: insurance-recommender
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    mem_limit: 1g
+    cpus: 1.0
